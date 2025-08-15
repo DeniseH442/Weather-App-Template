@@ -1,18 +1,44 @@
-import { useState } from 'react';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import SearchBar from "./components/SearchBar";
+import WeatherDisplay from "./components/WeatherDisplay";
+import { getCoordsFromLocation, getWeatherByCoords } from "./api/weatherApi";
+import weatherimage from "./assets/weather element.jpeg"
+const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+const DEFAULT_LOCATION = "Georgia";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [weatherData, setWeatherData] = useState(null);
+
+  const fetchWeather = async (loc) => {
+    try {
+      const coords = await getCoordsFromLocation(loc);
+      const data = await getWeatherByCoords(coords.lat, coords.lon);
+      setWeatherData(data);
+    } catch (error) {
+      alert("Couldn't get weather. Try again.");
+    }
+  };
+
+  useEffect(() => {
+    fetchWeather(location);
+  }, []);
+
+  const handleSearch = (searchTerm) => {
+    setLocation(searchTerm);
+    fetchWeather(searchTerm);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Counter</h1>
-        <p>Current Count {count}</p>
-        <button type='button' onClick={() => setCount((prev) => prev + 1)}>Increment Count</button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to reload.
-        </p>
-      </header>
+    <div className="app">
+      <h2>Path2Tech Weather App</h2>
+      <img
+        src={weatherimage}
+        alt="Weather icons"
+        className="weather-image"
+      />
+      <SearchBar onSearch={handleSearch} />
+      <WeatherDisplay data={weatherData} />
     </div>
   );
 }
